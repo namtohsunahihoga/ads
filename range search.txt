@@ -1,0 +1,26 @@
+<?php
+
+function rangeSearch($array, $lowerBound, $upperBound) {
+    $result = [];
+
+    foreach ($array as $value) {
+        if ($value >= $lowerBound && $value <= $upperBound) {
+            $result[] = $value;
+        }
+    }
+
+    return $result;
+}
+
+// Sample data
+$array = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+$lowerBound = 30;
+$upperBound = 70;
+
+// Perform range search
+$result = rangeSearch($array, $lowerBound, $upperBound);
+
+// Display the result
+echo "Elements within the range $lowerBound to $upperBound: " . implode(', ', $result);
+
+?>

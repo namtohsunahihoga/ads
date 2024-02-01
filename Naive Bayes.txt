@@ -1,0 +1,64 @@
+<?php
+
+class NaiveBayesClassifier {
+    private $classProbabilities = [];
+    private $featureProbabilities = [];
+
+    public function train($data) {
+        $classCounts = $featureCounts = [];
+
+        foreach ($data as ['class' => $class, 'features' => $features]) {
+            $classCounts[$class] = ($classCounts[$class] ?? 0) + 1;
+
+            foreach ($features as $feature) {
+                $featureCounts[$class][$feature] = ($featureCounts[$class][$feature] ?? 0) + 1;
+            }
+        }
+
+        $totalInstances = count($data);
+
+        foreach ($classCounts as $class => $count) {
+            $this->classProbabilities[$class] = $count / $totalInstances;
+        }
+
+        foreach ($featureCounts as $class => $features) {
+            foreach ($features as $feature => $count) {
+                $this->featureProbabilities[$class][$feature] = $count / $classCounts[$class];
+            }
+        }
+    }
+
+    public function predict($instance) {
+        $predictions = array_map(function ($classProb, $featureProbs) use ($instance) {
+            return log($classProb) + array_sum(array_map(function ($feature) use ($featureProbs) {
+                return log($featureProbs[$feature] ?? 1);
+            }, $instance));
+        }, $this->classProbabilities, $this->featureProbabilities);
+
+        return array_search(max($predictions), $predictions);
+    }
+}
+
+// Example usage:
+
+// Training data
+$trainingData = [
+    ['class' => 'spam', 'features' => ['buy', 'now']],
+    ['class' => 'not_spam', 'features' => ['meeting', 'tomorrow']],
+    // Add more training instances as needed
+];
+
+// Test instance
+$testInstance = ['buy', 'now'];
+
+// Create and train the classifier
+$naiveBayes = new NaiveBayesClassifier();
+$naiveBayes->train($trainingData);
+
+// Make a prediction
+$prediction = $naiveBayes->predict($testInstance);
+
+// Output the prediction
+echo 'Prediction: ' . $prediction . PHP_EOL;
+
+?>

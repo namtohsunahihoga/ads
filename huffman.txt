@@ -1,0 +1,94 @@
+<?php
+
+class HuffmanNode {
+    public $char;
+    public $freq;
+    public $left;
+    public $right;
+
+    public function __construct($char, $freq, $left = null, $right = null) {
+        $this->char = $char;
+        $this->freq = $freq;
+        $this->left = $left;
+        $this->right = $right;
+    }
+}
+
+function buildHuffmanTree($charFrequency) {
+    $priorityQueue = new SplPriorityQueue();
+
+    foreach ($charFrequency as $char => $freq) {
+        $priorityQueue->insert(new HuffmanNode($char, $freq), -$freq);
+    }
+
+    while ($priorityQueue->count() > 1) {
+        $node1 = $priorityQueue->extract();
+        $node2 = $priorityQueue->extract();
+
+        $combinedFreq = $node1->freq + $node2->freq;
+        $combinedNode = new HuffmanNode(null, $combinedFreq, $node1, $node2);
+
+        $priorityQueue->insert($combinedNode, -$combinedFreq);
+    }
+
+    return $priorityQueue->extract();
+}
+
+function buildHuffmanCodes($root, $code = '', &$codes = []) {
+    if ($root->char !== null) {
+        $codes[$root->char] = $code;
+    } else {
+        buildHuffmanCodes($root->left, $code . '0', $codes);
+        buildHuffmanCodes($root->right, $code . '1', $codes);
+    }
+}
+
+function encodeText($text, $codes) {
+    $encodedText = '';
+
+    for ($i = 0; $i < strlen($text); $i++) {
+        $char = $text[$i];
+        $encodedText .= $codes[$char];
+    }
+
+    return $encodedText;
+}
+
+function decodeText($encodedText, $root) {
+    $decodedText = '';
+    $currentNode = $root;
+
+    for ($i = 0; $i < strlen($encodedText); $i++) {
+        $bit = $encodedText[$i];
+
+        if ($bit === '0') {
+            $currentNode = $currentNode->left;
+        } else {
+            $currentNode = $currentNode->right;
+        }
+
+        if ($currentNode->char !== null) {
+            $decodedText .= $currentNode->char;
+            $currentNode = $root;
+        }
+    }
+
+    return $decodedText;
+}
+
+// Example usage:
+$text = 'hello world';
+$charFrequency = array_count_values(str_split($text));
+
+$huffmanTree = buildHuffmanTree($charFrequency);
+$codes = [];
+buildHuffmanCodes($huffmanTree, '', $codes);
+
+$encodedText = encodeText($text, $codes);
+$decodedText = decodeText($encodedText, $huffmanTree);
+
+echo "Original Text: $text\n";
+echo "Encoded Text: $encodedText\n";
+echo "Decoded Text: $decodedText\n";
+
+?>

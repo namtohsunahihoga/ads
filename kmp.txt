@@ -1,0 +1,57 @@
+<?php
+
+function buildLPS($pattern) {
+    $m = strlen($pattern);
+    $lps = [0];
+    $len = 0;
+
+    for ($i = 1; $i < $m; $i++) {
+        while ($len > 0 && $pattern[$i] != $pattern[$len]) {
+            $len = $lps[$len - 1];
+        }
+        $len += ($pattern[$i] == $pattern[$len]) ? 1 : 0;
+        $lps[] = $len;
+    }
+
+    return $lps;
+}
+
+function kmpSearch($text, $pattern) {
+    $n = strlen($text);
+    $m = strlen($pattern);
+    $lps = buildLPS($pattern);
+
+    $i = $j = 0;
+    $positions = [];
+
+    while ($i < $n) {
+        if ($pattern[$j] == $text[$i]) {
+            $i++;
+            $j++;
+        }
+
+        if ($j == $m) {
+            $positions[] = $i - $j;
+            $j = $lps[$j - 1];
+        } elseif ($i < $n && $pattern[$j] != $text[$i]) {
+            $j = ($j != 0) ? $lps[$j - 1] : $j;
+            $i++;
+        }
+    }
+
+    return $positions;
+}
+
+// Example usage
+$text = "ABABDABACDABABCABAB";
+$pattern = "ABABCABAB";
+
+$result = kmpSearch($text, $pattern);
+
+if (empty($result)) {
+    echo "Pattern not found in the text.";
+} else {
+    echo "Pattern found at positions: " . implode(', ', $result);
+}
+
+?>
